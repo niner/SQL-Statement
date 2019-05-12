@@ -10,6 +10,82 @@ use SQL::Statement::Subquery;
 use SQL::Statement::TableExpression;
 use SQL::Statement::TableOrQueryName;
 
+multi sub select(Whatever, SQL::Statement::TableExpression :$table-expression) is export {
+    SQL::Statement::Select.new(
+        :select-list(
+            SQL::Statement::Asterisk.new
+        ),
+        :$table-expression,
+    )
+}
+
+multi sub select(Whatever, SQL::Statement::FromClause :$from-clause) is export {
+    SQL::Statement::Select.new(
+        :select-list(
+            SQL::Statement::Asterisk.new
+        ),
+        :table-expression(
+            SQL::Statement::TableExpression.new(
+                :$from-clause
+            )
+        )
+    )
+}
+
+multi sub select(Whatever, SQL::Statement::FromClause $from-clause) is export {
+    SQL::Statement::Select.new(
+        :select-list(
+            SQL::Statement::Asterisk.new
+        ),
+        :table-expression(
+            SQL::Statement::TableExpression.new(
+                :$from-clause
+            )
+        )
+    )
+}
+
+sub table(Str $name) is export {
+    SQL::Statement::TableReference.new(
+        :table(SQL::Statement::TableOrQueryName.new(:$name))
+    )
+}
+
+multi sub from(SQL::Statement::TablePrimary $table) is export {
+    SQL::Statement::FromClause.new(
+        :table-references(
+            SQL::Statement::TableReference.new(
+                :$table
+            )
+        )
+    )
+}
+
+multi sub from(Str $table) is export {
+    SQL::Statement::FromClause.new(
+        :table-references(
+            table($table),
+        )
+    )
+}
+
+multi sub from(*@table-references) is export {
+    SQL::Statement::FromClause.new(
+        :@table-references
+    )
+}
+
+multi sub subquery($query, :$as) is export {
+    SQL::Statement::DerivedTable.new(
+        :correlation_name($as),
+        :subquery(
+            SQL::Statement::Subquery.new(
+                :$query
+            )
+        )
+    )
+}
+
 =begin pod
 
 =head1 NAME
