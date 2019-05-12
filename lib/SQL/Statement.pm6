@@ -3,12 +3,18 @@ unit class SQL::Statement:ver<0.0.1>:auth<cpan:nine>;
 
 use SQL::Generator;
 use SQL::Statement::Asterisk;
+use SQL::Statement::BooleanTest;
+use SQL::Statement::ColumnReference;
+use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
+use SQL::Statement::QualifiedJoin;
 use SQL::Statement::Select;
+use SQL::Statement::ScalarSubquery;
 use SQL::Statement::Subquery;
 use SQL::Statement::TableExpression;
 use SQL::Statement::TableOrQueryName;
+use SQL::Statement::WhereClause;
 
 multi sub select(Whatever, SQL::Statement::TableExpression :$table-expression) is export {
     SQL::Statement::Select.new(
@@ -32,14 +38,27 @@ multi sub select(Whatever, SQL::Statement::FromClause :$from-clause) is export {
     )
 }
 
-multi sub select(Whatever, SQL::Statement::FromClause $from-clause) is export {
+multi sub select(Whatever, SQL::Statement::FromClause $from-clause, SQL::Statement::WhereClause $where-clause?) is export {
     SQL::Statement::Select.new(
         :select-list(
             SQL::Statement::Asterisk.new
         ),
         :table-expression(
             SQL::Statement::TableExpression.new(
-                :$from-clause
+                :$from-clause,
+                :$where-clause,
+            )
+        )
+    )
+}
+
+multi sub select(SQL::Statement::SelectSublist $select-list, SQL::Statement::FromClause $from-clause, SQL::Statement::WhereClause $where-clause?) is export {
+    SQL::Statement::Select.new(
+        :$select-list,
+        :table-expression(
+            SQL::Statement::TableExpression.new(
+                :$from-clause,
+                :$where-clause,
             )
         )
     )
@@ -75,6 +94,19 @@ multi sub from(*@table-references) is export {
     )
 }
 
+multi sub join(SQL::Statement::TableReference $table, SQL::Statement::TableReference $rhs_table, :$type, SQL::Statement::BooleanValueExpression :$on) is export {
+    SQL::Statement::TableReference.new(
+        :table(
+            SQL::Statement::QualifiedJoin.new(
+                :join-type($type),
+                :table_reference($table),
+                :rhs_table_reference($rhs_table),
+                :join_specification($on),
+            )
+        )
+    )
+}
+
 multi sub subquery($query, :$as) is export {
     SQL::Statement::DerivedTable.new(
         :correlation_name($as),
@@ -83,6 +115,48 @@ multi sub subquery($query, :$as) is export {
                 :$query
             )
         )
+    )
+}
+
+multi sub scalar_subquery($query) is export {
+    SQL::Statement::ScalarSubquery.new(
+        :subquery(
+            SQL::Statement::Subquery.new(
+                :$query
+            )
+        )
+    )
+}
+
+multi sub where(SQL::Statement::BooleanValueExpression $search-condition) is export {
+    SQL::Statement::WhereClause.new(
+        :$search-condition
+    )
+}
+
+multi sub boolean_test(SQL::Statement::BooleanPrimary $boolean-primary, :$negated = False, :$truth-value) is export {
+    SQL::Statement::BooleanTest.new(
+        :$boolean-primary,
+        :$negated,
+        :$truth-value,
+    )
+}
+
+multi sub comparison($a, $op, $b) is export {
+    SQL::Statement::ComparisonPredicate.new(:row_value_predicand($a), :comp_op($op), :rhs_row_value_predicand($b))
+}
+
+multi sub eq($a, $b) is export {
+    SQL::Statement::BooleanTest.new(
+        :boolean-primary(
+            comparison($a, '=', $b)
+        ),
+    )
+}
+
+multi sub column(Str $identifier) is export {
+    SQL::Statement::ColumnReference.new(
+        :$identifier
     )
 }
 
