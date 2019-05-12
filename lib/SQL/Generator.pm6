@@ -21,7 +21,7 @@ multi method generate(SQL::Statement::FromClause $from) {
     'FROM ' ~ $from.table-references.map({self.generate($_)}).join(', ');
 }
 multi method generate(SQL::Statement::TableReference $table) {
-    "$.generate($table.table) {$table.sample-clause ?? self.generate($table.sample-clause) !! ''}"
+    $.generate($table.table) ~ ($table.sample-clause ?? ' ' ~ self.generate($table.sample-clause) !! '')
 }
 multi method generate(SQL::Statement::DerivedTable $table) {
     "$.generate($table.subquery) AS $table.correlation_name()"
