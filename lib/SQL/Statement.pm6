@@ -66,7 +66,7 @@ multi sub select(SQL::Statement::SelectSublist $select-list, SQL::Statement::Fro
 
 multi sub select(*@sublist, SQL::Statement::FromClause :$from, SQL::Statement::WhereClause :$where) is export {
     SQL::Statement::Select.new(
-        :select-list(SQL::Statement::SelectList.new(:@sublist)),
+        :select-list(SQL::Statement::SelectList.new(:sublist(@sublist.map: {column($_)}))),
         :table-expression(
             SQL::Statement::TableExpression.new(
                 :from-clause($from),
@@ -164,6 +164,10 @@ multi sub eq($a, $b) is export {
             comparison($a, '=', $b)
         ),
     )
+}
+
+multi sub column(SQL::Statement::ColumnReference $column) {
+    $column
 }
 
 multi sub column(Str $identifier) is export {
