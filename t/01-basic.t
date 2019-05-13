@@ -104,21 +104,12 @@ role SQL::Statement::Reference {
     has $.references;
 }
 
-multi trait_mod:<is>(Attribute $attr, SQL::Statement::TableReference :$references!) is export {
-    $attr does SQL::Statement::Reference(:$references)
-}
-
-class Country does SQL::Statement::TableReference {
-    method new() {
-        self.bless(:table(SQL::Statement::TableOrQueryName.new(:name<countries>)))
+role SQL::Table[Str $name] does SQL::Statement::TableReference {
+    method table() {
+        SQL::Statement::TableOrQueryName.new: :$name
     }
-}
 
-class Customer does SQL::Statement::TableReference {
-    has $.country is references(Country);
-
-    method new() {
-        self.bless(:table(SQL::Statement::TableOrQueryName.new(:name<customers>)))
+    method sample-clause() {
     }
 
     method join(Str $attribute) {
@@ -126,7 +117,7 @@ class Customer does SQL::Statement::TableReference {
             :table(
                 SQL::Statement::QualifiedJoin.new(
                     :table_reference(self),
-                    :rhs_table_reference(self.^get_attribute_for_usage('$!' ~ $attribute).references.new),
+                    :rhs_table_reference(self.^get_attribute_for_usage('$!' ~ $attribute).references),
                     :join_specification(
                         eq(column('customers.country_id'), column('countries.id'))
                     ),
@@ -136,13 +127,25 @@ class Customer does SQL::Statement::TableReference {
     }
 }
 
+multi trait_mod:<is>(Attribute $attr, SQL::Statement::TableReference :$references!) is export {
+    $attr does SQL::Statement::Reference(:$references)
+}
+
+class Country does SQL::Table['countries'] {
+    has $.id;
+}
+
+class Customer does SQL::Table['customers'] {
+    has $.country is references(Country);
+}
+
 {
     is(
         SQL::Generator.new.generate(
             select(
                 *,
                 from(
-                    Customer.new.join('country')
+                    Customer.join('country')
                 )
             )
         ),
