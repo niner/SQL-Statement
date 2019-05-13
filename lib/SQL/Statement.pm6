@@ -64,6 +64,18 @@ multi sub select(SQL::Statement::SelectSublist $select-list, SQL::Statement::Fro
     )
 }
 
+multi sub select(*@sublist, SQL::Statement::FromClause :$from, SQL::Statement::WhereClause :$where) is export {
+    SQL::Statement::Select.new(
+        :select-list(SQL::Statement::SelectList.new(:@sublist)),
+        :table-expression(
+            SQL::Statement::TableExpression.new(
+                :from-clause($from),
+                :where-clause($where),
+            )
+        )
+    )
+}
+
 sub table(Str $name) is export {
     SQL::Statement::TableReference.new(
         :table(SQL::Statement::TableOrQueryName.new(:$name))

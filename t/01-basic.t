@@ -150,6 +150,21 @@ class Customer does SQL::Statement::TableReference {
     );
 }
 
+{
+    is(
+        SQL::Generator.new.generate(
+            select(
+                column('id'),
+                column('name'),
+                :from(from(
+                    Customer.join('country')
+                ))
+            )
+        ),
+        'SELECT id, name FROM customers JOIN countries ON customers.country_id = countries.id',
+    );
+}
+
 done-testing;
 
 # vim: ft=perl6

@@ -16,6 +16,9 @@ use SQL::Statement::WhereClause;
 
 has @.values;
 
+multi method generate(SQL::Statement::SelectList $select-list) {
+    $select-list.sublist.map({$.generate($_)}).join: ', '
+}
 multi method generate(SQL::Statement::Select $select) {
     "SELECT $.generate($select.select-list) $.generate($select.table-expression)"
 }
