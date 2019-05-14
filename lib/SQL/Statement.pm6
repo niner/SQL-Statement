@@ -154,6 +154,10 @@ multi sub boolean_test(SQL::Statement::BooleanPrimary $boolean-primary, :$negate
     )
 }
 
+multi sub where(SQL::Statement::BooleanPrimary $boolean-primary) is export {
+    where(boolean_test($boolean-primary))
+}
+
 multi sub comparison($a, $op, $b) is export {
     SQL::Statement::ComparisonPredicate.new(:row_value_predicand($a), :comp_op($op), :rhs_row_value_predicand($b))
 }
