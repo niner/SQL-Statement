@@ -120,7 +120,7 @@ role SQL::Table[Str $name] does SQL::Statement::TableReference {
                     :table_reference(self),
                     :rhs_table_reference($reference.references),
                     :join_specification(
-                        eq(column("$name.country_id"), column("{$reference.references().table.name}.id"))
+                        eq(column("$name.$attribute"), column("{$reference.references().table.name}.id"))
                     ),
                 )
             )
@@ -137,7 +137,7 @@ class Country does SQL::Table['countries'] {
 }
 
 class Customer does SQL::Table['customers'] {
-    has $.country is references(Country);
+    has $.country_id is references(Country);
 }
 
 {
@@ -146,7 +146,7 @@ class Customer does SQL::Table['customers'] {
             select(
                 *,
                 from(
-                    Customer.join('country')
+                    Customer.join('country_id')
                 )
             )
         ),
@@ -161,7 +161,7 @@ class Customer does SQL::Table['customers'] {
                 column('id'),
                 column('name'),
                 :from(from(
-                    Customer.join('country')
+                    Customer.join('country_id')
                 ))
             )
         ),
@@ -176,7 +176,7 @@ class Customer does SQL::Table['customers'] {
                 'id',
                 'name',
                 :from(from(
-                    Customer.join('country')
+                    Customer.join('country_id')
                 ))
             )
         ),
