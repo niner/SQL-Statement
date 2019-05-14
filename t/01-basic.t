@@ -113,13 +113,14 @@ role SQL::Table[Str $name] does SQL::Statement::TableReference {
     }
 
     method join(Str $attribute) {
+        my $reference = self.^get_attribute_for_usage('$!' ~ $attribute);
         SQL::Statement::TableReference.new(
             :table(
                 SQL::Statement::QualifiedJoin.new(
                     :table_reference(self),
-                    :rhs_table_reference(self.^get_attribute_for_usage('$!' ~ $attribute).references),
+                    :rhs_table_reference($reference.references),
                     :join_specification(
-                        eq(column('customers.country_id'), column('countries.id'))
+                        eq(column("$name.country_id"), column("{$reference.references().table.name}.id"))
                     ),
                 )
             )
