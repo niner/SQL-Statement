@@ -7,14 +7,14 @@ use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
 use SQL::Statement::QualifiedJoin;
-use SQL::Statement::Select;
+use SQL::Statement::QuerySpecification;
 use SQL::Statement::ScalarSubquery;
 use SQL::Statement::Subquery;
 use SQL::Statement::TableExpression;
 use SQL::Statement::TableOrQueryName;
 use SQL::Statement::WhereClause;
 
-method search(SQL::Statement::Select $select) {
+method search(SQL::Statement::QuerySpecification $select) {
     my @*BINDVALUES;
     my $statement = self.generate($select);
     return (:$statement, bind_values => @*BINDVALUES).hash
@@ -23,7 +23,7 @@ method search(SQL::Statement::Select $select) {
 multi method generate(SQL::Statement::SelectList $select-list) {
     $select-list.sublist.map({$.generate($_)}).join: ', '
 }
-multi method generate(SQL::Statement::Select $select) {
+multi method generate(SQL::Statement::QuerySpecification $select) {
     "SELECT $.generate($select.select-list) $.generate($select.table-expression)"
 }
 multi method generate(SQL::Statement::Asterisk $asterisk) {

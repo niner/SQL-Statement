@@ -9,7 +9,7 @@ use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
 use SQL::Statement::QualifiedJoin;
-use SQL::Statement::Select;
+use SQL::Statement::QuerySpecification;
 use SQL::Statement::ScalarSubquery;
 use SQL::Statement::Subquery;
 use SQL::Statement::TableExpression;
@@ -17,7 +17,7 @@ use SQL::Statement::TableOrQueryName;
 use SQL::Statement::WhereClause;
 
 multi sub select(Whatever, SQL::Statement::TableExpression :$table-expression) is export {
-    SQL::Statement::Select.new(
+    SQL::Statement::QuerySpecification.new(
         :select-list(
             SQL::Statement::Asterisk.new
         ),
@@ -26,7 +26,7 @@ multi sub select(Whatever, SQL::Statement::TableExpression :$table-expression) i
 }
 
 multi sub select(Whatever, SQL::Statement::FromClause :$from-clause) is export {
-    SQL::Statement::Select.new(
+    SQL::Statement::QuerySpecification.new(
         :select-list(
             SQL::Statement::Asterisk.new
         ),
@@ -39,7 +39,7 @@ multi sub select(Whatever, SQL::Statement::FromClause :$from-clause) is export {
 }
 
 multi sub select(Whatever, SQL::Statement::FromClause $from-clause, SQL::Statement::WhereClause $where-clause?) is export {
-    SQL::Statement::Select.new(
+    SQL::Statement::QuerySpecification.new(
         :select-list(
             SQL::Statement::Asterisk.new
         ),
@@ -53,7 +53,7 @@ multi sub select(Whatever, SQL::Statement::FromClause $from-clause, SQL::Stateme
 }
 
 multi sub select(SQL::Statement::SelectSublist $select-list, SQL::Statement::FromClause $from-clause, SQL::Statement::WhereClause $where-clause?) is export {
-    SQL::Statement::Select.new(
+    SQL::Statement::QuerySpecification.new(
         :$select-list,
         :table-expression(
             SQL::Statement::TableExpression.new(
@@ -65,7 +65,7 @@ multi sub select(SQL::Statement::SelectSublist $select-list, SQL::Statement::Fro
 }
 
 multi sub select(*@sublist, SQL::Statement::FromClause :$from, SQL::Statement::WhereClause :$where) is export {
-    SQL::Statement::Select.new(
+    SQL::Statement::QuerySpecification.new(
         :select-list(SQL::Statement::SelectList.new(:sublist(@sublist.map: {column($_)}))),
         :table-expression(
             SQL::Statement::TableExpression.new(

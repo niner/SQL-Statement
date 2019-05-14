@@ -2,7 +2,7 @@ use SQL::Statement::SelectList;
 use SQL::Statement::TableExpression;
 use SQL::Statement::WhereClause;
 
-unit class SQL::Statement::Select;
+unit class SQL::Statement::QuerySpecification;
 
 has SQL::Statement::SelectList $.select-list is required;
 has SQL::Statement::TableExpression $.table-expression is required;

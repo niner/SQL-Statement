@@ -3,12 +3,8 @@ use Test;
 use SQL::Statement;
 
 use SQL::Generator;
-use SQL::Statement::Asterisk;
-use SQL::Statement::DerivedTable;
-use SQL::Statement::FromClause;
-use SQL::Statement::Select;
-use SQL::Statement::Subquery;
-use SQL::Statement::TableExpression;
+use SQL::Statement::QualifiedJoin;
+use SQL::Statement::TableReference;
 use SQL::Statement::TableOrQueryName;
 
 is(
