@@ -6,6 +6,7 @@ use SQL::Statement::ColumnReference;
 use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
+use SQL::Statement::NonJoinQueryExpressionUnion;
 use SQL::Statement::QualifiedJoin;
 use SQL::Statement::QueryExpression;
 use SQL::Statement::QuerySpecification;
@@ -21,6 +22,9 @@ method search(SQL::Statement::QuerySpecification $select) {
     return (:$statement, bind_values => @*BINDVALUES).hash
 }
 
+multi method generate(SQL::Statement::NonJoinQueryExpressionUnion $union) {
+    $.generate($union.query-expression-body) ~ ' UNION ' ~ $.generate($union.query-term)
+}
 multi method generate(SQL::Statement::QueryExpression $query-expression) {
     ($query-expression.with-clause ?? $.generate($query-expression.with-clause) ~ ' ' !! '')
     ~ $.generate($query-expression.query-expression-body)

@@ -205,6 +205,37 @@ class Customer does SQL::Table['customers'] {
     );
 }
 
+{
+    is(
+        SQL::Generator.new.generate(
+            with(
+                with-clause(
+                    :recursive,
+                    with-list-element(
+                        'foo',
+                        union(
+                            select(
+                                'id'
+                            ),
+                            select(
+                                'id'
+                            ),
+                        ),
+                    ),
+                ),
+                select(
+                    'id',
+                    'name',
+                    :from(from(
+                        Customer.join('country_id')
+                    ))
+                )
+            )
+        ),
+        'WITH RECURSIVE foo AS (SELECT id UNION SELECT id) SELECT id, name FROM customers JOIN countries ON customers.country_id = countries.id',
+    );
+}
+
 done-testing;
 
 # vim: ft=perl6
