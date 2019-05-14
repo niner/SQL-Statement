@@ -7,6 +7,7 @@ use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
 use SQL::Statement::QualifiedJoin;
+use SQL::Statement::QueryExpression;
 use SQL::Statement::QuerySpecification;
 use SQL::Statement::ScalarSubquery;
 use SQL::Statement::Subquery;
@@ -20,11 +21,16 @@ method search(SQL::Statement::QuerySpecification $select) {
     return (:$statement, bind_values => @*BINDVALUES).hash
 }
 
+multi method generate(SQL::Statement::QueryExpression $query-expression) {
+    ($query-expression.with-clause ?? $.generate($query-expression.with-clause) ~ ' ' !! '')
+    ~ $.generate($query-expression.query-expression-body)
+}
 multi method generate(SQL::Statement::SelectList $select-list) {
     $select-list.sublist.map({$.generate($_)}).join: ', '
 }
 multi method generate(SQL::Statement::QuerySpecification $select) {
-    "SELECT $.generate($select.select-list) $.generate($select.table-expression)"
+    my $table-expression = $.generate($select.table-expression);
+    "SELECT $.generate($select.select-list)" ~ ($table-expression ?? " $table-expression" !! '')
 }
 multi method generate(SQL::Statement::Asterisk $asterisk) {
     '*'
@@ -67,6 +73,12 @@ multi method generate(SQL::Statement::QualifiedJoin $join) {
     $sql ~= " $join.join-type.uc()" if $join.join-type;
     $sql ~= " JOIN $.generate($join.rhs_table_reference) ON $.generate($join.join_specification)";
     $sql
+}
+multi method generate(SQL::Statement::WithListElement $with-list-element) {
+    $.generate($with-list-element.query-name) ~ ' AS (' ~ $.generate($with-list-element.query-expression) ~ ')'
+}
+multi method generate(SQL::Statement::WithClause $with-clause) {
+    'WITH ' ~ ($with-clause.recursive ?? 'RECURSIVE ' !! '') ~ $with-clause.with-list.map({$.generate($_)}).join(', ')
 }
 multi method generate(Str $value) {
     @*BINDVALUES.push: $value if defined @*BINDVALUES;

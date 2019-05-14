@@ -180,6 +180,31 @@ class Customer does SQL::Table['customers'] {
     );
 }
 
+{
+    is(
+        SQL::Generator.new.generate(
+            with(
+                with-clause(
+                    with-list-element(
+                        'foo',
+                        select(
+                            'id'
+                        ),
+                    ),
+                ),
+                select(
+                    'id',
+                    'name',
+                    :from(from(
+                        Customer.join('country_id')
+                    ))
+                )
+            )
+        ),
+        'WITH foo AS (SELECT id) SELECT id, name FROM customers JOIN countries ON customers.country_id = countries.id',
+    );
+}
+
 done-testing;
 
 # vim: ft=perl6

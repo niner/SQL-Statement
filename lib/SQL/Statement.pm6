@@ -9,12 +9,33 @@ use SQL::Statement::ComparisonPredicate;
 use SQL::Statement::DerivedTable;
 use SQL::Statement::FromClause;
 use SQL::Statement::QualifiedJoin;
+use SQL::Statement::QueryExpression;
 use SQL::Statement::QuerySpecification;
 use SQL::Statement::ScalarSubquery;
 use SQL::Statement::Subquery;
 use SQL::Statement::TableExpression;
 use SQL::Statement::TableOrQueryName;
 use SQL::Statement::WhereClause;
+use SQL::Statement::WithClause;
+
+multi sub with-list-element($query-name, SQL::Statement::QueryExpression $query-expression) is export {
+    SQL::Statement::WithListElement.new(:query-name(SQL::Statement::TableOrQueryName.new(:name($query-name))), :$query-expression)
+}
+
+multi sub with-list-element($query-name, SQL::Statement::QuerySpecification $query-specification) is export {
+    SQL::Statement::WithListElement.new(
+        :query-name(SQL::Statement::TableOrQueryName.new(:name($query-name)))
+        :query-expression(SQL::Statement::QueryExpression.new(:query-expression-body($query-specification))),
+    )
+}
+
+multi sub with-clause(*@with-list) is export {
+    SQL::Statement::WithClause.new(:@with-list)
+}
+
+multi sub with(SQL::Statement::WithClause $with-clause, SQL::Statement::QueryExpressionBody $query-expression-body) is export {
+    SQL::Statement::QueryExpression.new(:$with-clause, :$query-expression-body)
+}
 
 multi sub select(Whatever, SQL::Statement::TableExpression :$table-expression) is export {
     SQL::Statement::QuerySpecification.new(
