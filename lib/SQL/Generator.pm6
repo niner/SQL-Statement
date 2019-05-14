@@ -14,7 +14,11 @@ use SQL::Statement::TableExpression;
 use SQL::Statement::TableOrQueryName;
 use SQL::Statement::WhereClause;
 
-has @.values;
+method search(SQL::Statement::Select $select) {
+    my @*BINDVALUES;
+    my $statement = self.generate($select);
+    return (:$statement, bind_values => @*BINDVALUES).hash
+}
 
 multi method generate(SQL::Statement::SelectList $select-list) {
     $select-list.sublist.map({$.generate($_)}).join: ', '
@@ -65,6 +69,10 @@ multi method generate(SQL::Statement::QualifiedJoin $join) {
     $sql
 }
 multi method generate(Str $value) {
-    @!values.push: $value;
+    @*BINDVALUES.push: $value if defined @*BINDVALUES;
+    '?'
+}
+multi method generate(Int $value) {
+    @*BINDVALUES.push: $value if defined @*BINDVALUES;
     '?'
 }
